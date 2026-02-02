@@ -1,0 +1,16 @@
+<template>
+    
+     <template if:true={accounts}>
+         
+        <ul>
+            <template for:each={accounts} for:item="acc">
+                <li key={acc.Id}>
+                   {acc.Name} - {acc.Phone}
+                </li>
+
+            </template>
+            
+        </ul>
+
+     </template>
+</template>

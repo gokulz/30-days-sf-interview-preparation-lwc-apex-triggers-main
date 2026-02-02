@@ -1,0 +1,17 @@
+<template>
+
+    <lightning-card title="Account Search">
+
+        <lightning-input
+            type="search"
+            label="Search Accounts"
+            onkeyup={handleKeyUp}>
+        </lightning-input>
+
+         <c-child-filtered-results search-key={searchKey}>
+
+         </c-child-filtered-results>
+
+        </lightning-card>
+    
+</template>
