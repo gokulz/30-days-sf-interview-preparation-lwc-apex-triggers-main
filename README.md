@@ -20,6 +20,8 @@
 5. **Create a trigger on opportunity , when the user inserts an opportunity trigger will check that the closing date of opportunity is greater than one month and amount is greater than 50000.**
 6. **On updating an Account record, the total Amount of all Opportunities related to that Account should be calculated and stored in the Total Opportunity Amount field on the Account.**
 7. **write a trigger to update the contact's Saluatation Field According to Gender**.
+8. **Write a trigger to update the user phone number as same as the contact phone number once the contact phone number gets updated.**
+9. **Trigger to count number of opportunitylineitems associated with an opportunity and display the count on account's custom field.**
 
 ### Asynchronous Apex 
 **--> async apex is a way of running apex code in the background in the separate thread or separate transactions.**

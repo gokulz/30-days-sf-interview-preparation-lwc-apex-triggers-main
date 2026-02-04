@@ -13,6 +13,10 @@ public with sharing class RollUpSummaryContactTriggerHandler {
       //  rollupSummaryTriggerMethod(cont, null);
       checkBoxTriggerMethod(cont, null);
     }
+
+    /**
+     * Write a trigger on contact to count the number of child contacts an account has and put that on account record
+     */
   
     private static void rollupSummaryTriggerMethod(List<Contact> cont, Map<Id,Contact> oldMap){
 
