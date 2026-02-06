@@ -22,6 +22,7 @@
 7. **write a trigger to update the contact's Saluatation Field According to Gender**.
 8. **Write a trigger to update the user phone number as same as the contact phone number once the contact phone number gets updated.**
 9. **Trigger to count number of opportunitylineitems associated with an opportunity and display the count on account's custom field.**
+10. **write an apex trigger that create task or update task based on stage changes(opportunity record stagename updated if the task name present update stage name in the tasks description else create a new task).**
 
 ### Asynchronous Apex 
 **--> async apex is a way of running apex code in the background in the separate thread or separate transactions.**

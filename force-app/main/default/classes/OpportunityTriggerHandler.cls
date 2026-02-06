@@ -5,7 +5,8 @@ public with sharing class OpportunityTriggerHandler {
     }
 
     public static void afterUpdate(List<Opportunity> opps, Map<Id,Opportunity> oldMap){
-         checboxChecker(opps, oldMap);
+         //checboxChecker(opps, oldMap);
+         createTask(opps, oldMap);
     }
     public static void afterDelete (List<Opportunity> opps){
         checboxChecker(opps, null);
@@ -73,7 +74,7 @@ public with sharing class OpportunityTriggerHandler {
      will check that the closing date of opportunity is greater than one month and amount is greater than 50000.
     */
 
-    private static void checkClosingDate(List<Opportuniyt> opps){
+    private static void checkClosingDate(List<Opportunity> opps){
 
         // //brute force
         // for(Opportunity newOpp : opps){
@@ -83,17 +84,111 @@ public with sharing class OpportunityTriggerHandler {
         // }
 
         //the optimal approach
-        Date oneMonthFromNow = Date.today().addMonths(1);
+        // Date oneMonthFromNow = Date.today().addMonths(1);
 
-        for(Opportunity newOpp : opps){
-            if(!newOpp.CloseDate() <= oneMonthFromNow || !newOpp.Amount <= 5000){
-                newOpp.addError('you cannot able to insert');
-            }
-        }
-
+        // for(Opportunity newOpp : opps){
+        //     if(!newOpp.CloseDate() <= oneMonthFromNow || !newOpp.Amount <= 5000){
+        //         newOpp.addError('you cannot able to insert');
+        //     }
+        // }
 
     }
 
-}
+    /**
+     * write an apex trigger that create task or update task based on stage changes (opportunity record stagename updated if the task name 
+     * present update stage name in the tasks description else create a new task)  
+     */
 
-//Opportunity_Checkbox__c
+
+
+     private static void createTask(List<Opportunity> listOfOps, Map<Id,Opportunity> oldMap){
+           
+           Set<Id> oppIds = new Set<Id>();
+           Map<Id,Task> tskMap = new Map<Id,Task>();
+           List<Task> updateToTask = new List<Task>();
+           List<Task> insetToTask = new List<Task>();
+
+
+           for(Opportunity newOpp : listOfOps){
+                Opportunity oldStage = oldMap.get(newOpp.Id);
+                if(newOpp.StageName != null && newOpp.StageName != oldStage.StageName){
+                     oppIds.add(newOpp.Id);
+                }
+           }
+          
+
+           List<Task> listOfTask = [Select Id, Subject, Description, WhatId From Task Where WhatId in : oppIds];
+
+           for(Task tsk : listOfTask){
+                tskMap.put(tsk.WhatId, tsk);
+           }
+           
+           for(Opportunity opp : listOfOps){
+               if(opp.StageName != oldMap.get(opp.Id).StageName){
+                  Task newTask;
+
+                  if(tskMap.containsKey(opp.Id)){
+                     newTask = tskMap.get(opp.Id);
+                     newTask.Description = 'Opportunity hasbeen update to the statgeName: ' + opp.StageName;
+                     updateToTask.add(newTask);
+                  }else{
+                      newTask = new Task();
+                      newTask.Subject = 'Folloup on stage';
+                      newTask.Description ='Newly created task with stagename: ' + opp.StageName;
+                      newTask.WhatId = opp.Id;
+                      insetToTask.add(newTask);
+                  }
+               }
+           }
+
+           if(!updateToTask.isEmpty()){
+              update updateToTask;
+           }
+           if(!insetToTask.isEmpty()){
+              insert insetToTask;
+           }
+     }
+
+    //  private static void createTask(List<Opportunity> opps, Map<Id,Opportunity> oldMap){
+         
+    //     // //bruteforce approach 
+    //     // for(Opportunity opp : opps){
+    //     //     Opportunity oldMapStage = oldMap.get(opp.Id);
+    //     //     if(opp.StageName != null  && oldMapStage.StageName  != opp.StageName){
+    //     //         Task tsk = new Task();
+    //     //         tsk.Subject = opp.StageName;
+    //     //         tsk.WhatId = opp.Id;
+    //     //         tsk.Description = opp.StageName;
+    //     //         tsk.Status = 'Progress';
+    //     //         upsert tsk;
+    //     //     }
+    //     // }
+
+    //     Set<Id> allOppIds = new Set<Id>();
+
+    //     //making bulkification this approach will create every time the new task for each stage name
+    //     for(Opportunity newOpp : opps){
+    //         Opportunity oldMapStage = oldMap.get(newOpp.Id);
+
+    //         if(newOpp.StageName != null && newOpp.StageName != oldMapStage.StageName){
+    //               allOppIds.add(newOpp.Id);
+    //         }
+    //     }
+
+    //     List<Opportunity> allOpps = [Select Id, StageName From Opportunity Where Id in :allOppIds];
+
+    //    List<Task> taskToUpdate = new List<Task>();
+    //     for(Opportunity op : allOpps){
+    //         Task tsk = new Task();
+    //          tsk.Subject = op.StageName;
+    //          tsk.WhatId = op.Id;
+    //          tsk.Description = op.StageName;
+    //         tsk.Status = 'Progress';
+    //         taskToUpdate.add(tsk);
+    //     }
+
+    //     if(!taskToUpdate.isEmpty()){
+    //         upsert taskToUpdate;
+    //     }
+   //  }
+}
