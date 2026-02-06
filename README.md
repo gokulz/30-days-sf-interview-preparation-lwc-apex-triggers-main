@@ -30,6 +30,8 @@
 **--> future method runs in separate transaction after the current execution completes. it runs in a separate thread. mostly use for handling mixed dml errors. must be static and void. cannot accept sobjects directly.**
 ### Example
 1. **Future Method example - create a follow up task everytime a new lead gets created and associate that task with lead.**
+### Batch Apex
+1. **Update all Contacts Where MailingCityCity = Hydrabad --> set the Region__c field to "South India"**.
 
 
 ## Configure Your Salesforce DX Project
