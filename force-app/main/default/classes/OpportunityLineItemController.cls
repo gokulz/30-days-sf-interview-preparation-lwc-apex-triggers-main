@@ -128,15 +128,15 @@ public with sharing class OpportunityLineItemController {
           List<Opportunity> allOpps = [Select Id, AccountId From Opportunity Where Id in: oppIds];
 
           for(Opportunity opp : allOpps){
-              oppMap.put(opp.AccountId, opp);
+              oppMap.put(opp.Id, opp);
           }
 
           Map<Id,String> accountDesMap = new Map<Id,String>();
 
           for(OpportunityLineItem oppsLineItem : oppLineItems){
-             Opportunity oops = oppMap.get(oopsLineItem.OpportunityId);
-             if(opps != null){
-                accountDesMap.put(oops.AccountId, oppLineItems.Description);
+             Opportunity oops = oppMap.get(oppsLineItem.OpportunityId);
+             if(oops != null){
+                accountDesMap.put(oops.AccountId, oppsLineItem.Description);
              }
           }
 
@@ -156,4 +156,46 @@ public with sharing class OpportunityLineItemController {
 
       //11-02-2026 challenge
       /** Trigger to update Account's Amount field by opportunityLineItem's listPrice which is associated with opportunity. */
+     
+      public static void updateAmountField(List<OpportunityLineItem> oppLineItems){
+         
+         Set<Id> oppIds = new Set<Id>();
+
+          for(OpportunityLineItem oppLine : oppLineItems){
+               if(oppLine != null){
+                  oppIds.add(oppLine.OpportunityId);
+               }
+          }
+
+          List<Opportunity> allops = [Select Id, AccountId From Opportunity Where Id in :oppIds];
+
+          Map<Id,Opportunity> oppMap = new Map<Id,Opportunity>();
+
+         for(Opportunity opp : allops){
+             oppMap.put(opp.Id, opp);
+         }
+
+        Map<Id,Decimal> accountAmountMap = new Map<Id,Decimal>();
+
+         for(OpportunityLineItem newOppLineItems : oppLineItems){
+             Opportunity ops = oppMap.get(newOppLineItems.OpportunityId);
+
+             if(ops != null){
+                 accountAmountMap.put(ops.AccountId, newOppLineItems.ListPrice);
+             }
+         }
+
+         List<Account> allAccounts = [Select Id, ListPriceAmount__c From Account Where Id in : accountAmountMap.keySet()];
+         List<Account> accToUpdate = new List<Account>();
+
+         for(Account acc : allAccounts){
+             acc.ListPriceAmount__c = accountAmountMap.get(acc.Id);
+             accToUpdate.add(acc);
+         }
+
+         if(!accToUpdate.isEmpty()){
+             update accToUpdate;
+         }
+      }
+
 }

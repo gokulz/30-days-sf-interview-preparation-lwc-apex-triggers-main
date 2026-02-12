@@ -1,7 +1,8 @@
 public with sharing class OpportunityTriggerHandler {
  
     public static void afterInsert(List<Opportunity> opps){
-        checboxChecker(opps, null);
+      //  checboxChecker(opps, null);
+      updateTheAccountRating(opps);
     }
 
     public static void afterUpdate(List<Opportunity> opps, Map<Id,Opportunity> oldMap){
@@ -149,6 +150,84 @@ public with sharing class OpportunityTriggerHandler {
            }
      }
 
+
+     /**
+      * Write a Trigger to update Account Rating based on Total Amount of Related Opportunities
+      * Amount less than or equal to 50k --> Rating will be cold
+        Amount less than or equal to 1L --> Rating will be Warm
+        Amount greater than 1L --> Rating will be hot
+      */
+
+
+     private static void updateTheAccountRating(List<Opportunity> listOfOpp){
+           
+        //brute force 
+        // for(Opportunity opp : listOfOpp){
+        //      Account acc = [Select Id, Rating From Account Where Id =: opp.AccountId];
+
+        //      if(opp.Amount > 50000){
+        //         acc.Rating = 'Cold';
+        //         update acc;
+        //      }
+
+        //optimized
+
+        Set<Id> accIds = new Set<Id>();
+        for(Opportunity opp : listOfOpp){
+             if(opp != null){
+               accIds.add(opp.AccountId);
+             }
+        }
+
+         List<Opportunity>  allOps = [Select Id, AccountId, Amount From Opportunity Where AccountId in : accIds];
+
+         Map<Id,Decimal> amountMap = new Map<Id,Decimal>();
+
+          for(Opportunity opps : allOps){
+            if(amountMap.containsKey(opps.AccountId)){
+             amountMap.put(opps.AccountId, amountMap.get(opps.AccountId)+ opps.Amount);
+            }else{
+                 amountMap.put(opps.AccountId, opps.Amount);
+            }
+          }
+
+          List<Account> allAccount = [Select Id, Rating From Account Where Id in : accIds];
+
+          List<Account> accountsToUpdate = new List<Account>();
+
+          for(Account acc : allAccount){
+               if(amountMap.containsKey(acc.Id)){
+                   Decimal totalAmount = amountMap.get(acc.Id);
+                   
+                   if(totalAmount <= 50000){
+                     acc.Rating = 'Cold';
+                   } else if(totalAmount <=100000){
+                       acc.Rating = 'Warm';
+                   }else{
+                      acc.Rating = 'Hot';
+                   }
+                  accountsToUpdate.add(acc);
+               }
+          }
+
+          if(!accountsToUpdate.isEmpty()){
+              update accountsToUpdate;
+          }
+         
+        }
+     }
+
+    /**
+     * challenge 13-02-2026 same trigger try with after update after undelete, after delete then use aggregateresult
+     * 
+      * Write a Trigger to update Account Rating based on Total Amount of Related Opportunities
+      * Amount less than or equal to 50k --> Rating will be cold
+        Amount less than or equal to 1L --> Rating will be Warm
+        Amount greater than 1L --> Rating will be hot
+      */
+
+    
+
     //  private static void createTask(List<Opportunity> opps, Map<Id,Opportunity> oldMap){
          
     //     // //bruteforce approach 
@@ -191,4 +270,4 @@ public with sharing class OpportunityTriggerHandler {
     //         upsert taskToUpdate;
     //     }
    //  }
-}
+//}

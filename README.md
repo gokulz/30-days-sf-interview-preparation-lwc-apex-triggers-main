@@ -25,6 +25,7 @@
 10. **write an apex trigger that create task or update task based on stage changes(opportunity record stagename updated if the task name present update stage name in the tasks description else create a new task).**
 11. **Trigger to count OpportunityLineItem whose listPrice is greater than $50,000 associated with opportunity and display that count on Account custom field.**
 12. **Trigger to update Account's description by opportunityLineItem's description which is associated with opportunity.**
+13. **Write a Trigger to update Account Rating based on Total Amount of Related Opportunities**.
 
 
 

@@ -1,11 +1,11 @@
-trigger OpporutnityLineItemTrigger on OpportunityLineItem (after insert, after delete) {
+trigger OpporutnityLineItemTrigger on OpportunityLineItem (after insert) {
          
     if(Trigger.isAfter){
         if(Trigger.isInsert){
-            OpportunityLineItemController.updateCountOppotunityLineItem(trigger.new);
+            OpportunityLineItemController.updaateAccountsDescription(trigger.new);
         }
-        if(Trigger.isDelete){
-            OpportunityLineItemController.updateCountOppotunityLineItem(trigger.old);
-        }
+        // if(Trigger.isDelete){
+        //     OpportunityLineItemController.updateCountOppotunityLineItem(trigger.old);
+        // }
     }
 }
