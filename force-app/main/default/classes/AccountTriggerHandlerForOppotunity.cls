@@ -95,4 +95,36 @@ public with sharing class AccountTriggerHandlerForOppotunity {
             update accountToUpdate;
         }
      }
+
+     /**
+      * Write a trigger on Account, to create No Of Contacts based on a field value from account record.
+      */
+      
+      public static void createNumberContacts(List<Account> allAccounts){
+
+        List<Contact> listOfCont = new List<Contact>();
+           
+          for(Account acc : allAccounts){
+              if(acc.No_Of_Con__c != null){
+                  for(int i=0; i<acc.No_Of_Con__c; i++){
+                      Contact con = new Contact();
+                      con.FirstName = 'Test';
+                      con.LastName = 'Contact' + i;
+                      con.AccountId = acc.Id;
+                       listOfCont.add(con);
+                  }
+              }
+          }
+
+          if(!listOfCont.isEmpty()){
+             insert listOfCont;
+          }
+      }
+
+
+      /**
+       * write a trigger to calculate number of cases for each account based on their Status (New, Working, Escalated)
+       */
+
+       
 }

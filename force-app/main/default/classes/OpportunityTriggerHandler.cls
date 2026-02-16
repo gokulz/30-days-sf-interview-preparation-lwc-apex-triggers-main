@@ -218,7 +218,7 @@ public with sharing class OpportunityTriggerHandler {
      }
 
     /**
-     * challenge 13-02-2026 same trigger try with after update after undelete, after delete then use aggregateresult
+     * challenge 16-02-2026 same trigger try with after update after undelete, after delete then use aggregateresult
      * 
       * Write a Trigger to update Account Rating based on Total Amount of Related Opportunities
       * Amount less than or equal to 50k --> Rating will be cold

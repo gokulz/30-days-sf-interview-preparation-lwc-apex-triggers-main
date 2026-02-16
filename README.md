@@ -26,7 +26,8 @@
 11. **Trigger to count OpportunityLineItem whose listPrice is greater than $50,000 associated with opportunity and display that count on Account custom field.**
 12. **Trigger to update Account's description by opportunityLineItem's description which is associated with opportunity.**
 13. **Write a Trigger to update Account Rating based on Total Amount of Related Opportunities**.
-
+14. **Write a trigger on Account, to create No Of Contacts based on a field value from account record.**
+15. **write a trigger to calculate number of cases for each account based on their Status (New, Working, Escalated)**
 
 
 ### Asynchronous Apex 
