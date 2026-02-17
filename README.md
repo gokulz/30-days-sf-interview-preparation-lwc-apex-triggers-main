@@ -28,6 +28,7 @@
 13. **Write a Trigger to update Account Rating based on Total Amount of Related Opportunities**.
 14. **Write a trigger on Account, to create No Of Contacts based on a field value from account record.**
 15. **write a trigger to calculate number of cases for each account based on their Status (New, Working, Escalated)**
+16. **Automatically create a followup task with additional info description when lead is converted.**
 
 
 ### Asynchronous Apex 
