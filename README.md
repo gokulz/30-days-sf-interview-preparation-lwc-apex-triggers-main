@@ -29,6 +29,7 @@
 14. **Write a trigger on Account, to create No Of Contacts based on a field value from account record.**
 15. **write a trigger to calculate number of cases for each account based on their Status (New, Working, Escalated)**
 16. **Automatically create a followup task with additional info description when lead is converted.**
+17. **Delete all Related Opportunities and check do not contact checkbox on related contact when user changes Account status from Active to Inactive.**
 
 
 ### Asynchronous Apex 

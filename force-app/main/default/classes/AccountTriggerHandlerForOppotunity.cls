@@ -72,7 +72,7 @@ public with sharing class AccountTriggerHandlerForOppotunity {
 
         Map<Id,Decimal> sumOfAmoutn = new Map<Id,Decimal>();
 
-        List<AggregateResult> agrResult = [Select Id, AccountId accId, Sum(Amount) amt From Opportunity Where AccountId in :allAccountIds Group By AccountId];
+        List<AggregateResult> agrResult = [Select AccountId accId, Sum(Amount) amt From Opportunity Where AccountId in :allAccountIds Group By AccountId];
 
         for(AggregateResult agr : agrResult){
             Id accId = (Id)agr.get('accId');
@@ -100,31 +100,108 @@ public with sharing class AccountTriggerHandlerForOppotunity {
       * Write a trigger on Account, to create No Of Contacts based on a field value from account record.
       */
       
-      public static void createNumberContacts(List<Account> allAccounts){
+    //   public static void createNumberContacts(List<Account> allAccounts){
 
-        List<Contact> listOfCont = new List<Contact>();
+    //     List<Contact> listOfCont = new List<Contact>();
            
-          for(Account acc : allAccounts){
-              if(acc.No_Of_Con__c != null){
-                  for(int i=0; i<acc.No_Of_Con__c; i++){
-                      Contact con = new Contact();
-                      con.FirstName = 'Test';
-                      con.LastName = 'Contact' + i;
-                      con.AccountId = acc.Id;
-                       listOfCont.add(con);
-                  }
-              }
+    //       for(Account acc : allAccounts){
+    //           if(acc.No_Of_Con__c != null){
+    //               for(int i=0; i<acc.No_Of_Con__c; i++){
+    //                   Contact con = new Contact();
+    //                   con.FirstName = 'Test';
+    //                   con.LastName = 'Contact' + i;
+    //                   con.AccountId = acc.Id;
+    //                    listOfCont.add(con);
+    //               }
+    //           }
+    //       }
+
+    //       if(!listOfCont.isEmpty()){
+    //          insert listOfCont;
+    //       }
+    //   }
+
+
+    /**
+     * Delete all Related Opportunities and
+     *  check do not contact checkbox on related contact when user changes Account status from Active to Inactive.
+     */
+    public static void deleteRelatedOpp(List<Account> listofAccounts, Map<Id,Account> oldMap){
+
+        // //bruteforce
+        // for(Account acc : listofAccounts){
+        //       if(acc != null && acc.Status__c == 'InActive'){
+        //            Account acct = [Select Id, Status__c, (Select Id, Do_not_Contact__c From Contacts), (Select Id, Name From Opportunities) From Account Where Id =: acc.Id];
+        //            Contact con = acct.Contacts;
+        //            con.Do_not_Contact__c = true;
+        //            update con;
+        //            Opportunity opp = acct.Opportunities;
+        //            delete opp;
+        //       }
+        // }
+
+        //better approach with 3 loops 
+
+        // Set<Id> accIds = new Set<Id>();
+        // for(Account acc : listofAccounts){
+        //     Account oldAcc = oldMap.get(acc.Id);
+        //     if(acc != null && acc.Status__c == 'InActive' && oldAcc.Status__c == 'Active'){
+        //           accIds.add(acc.Id);
+        //     }
+        // }
+
+        // List<Account> allAccountsRelated = [Select Id, Name, (Select Id, Do_not_Contact__c From Contacts), (Select Id, Name From Opportunities) From Account Where Id in : accIds];
+
+        // List<Opportunity> oppToDelete = new List<Opportunity>();
+        // List<Contact> contToUpdate = new List<Contact>();
+        // for(Account acc : allAccountsRelated){
+             
+        //     for(Opportunity opp : acc.Opportunities){
+        //          oppToDelete.add(opp);
+        //     }
+        //     for(Contact con : acc.Contacts){
+        //          con.Do_not_Contact__c = true;
+        //          contToUpdate.add(con);
+        //     }
+        // }
+
+        // delete oppToDelete;
+        // update contToUpdate;
+
+
+
+      //optimal approach 
+      Set<Id> accIds = new Set<Id>();
+
+      for(Account acc : listofAccounts){
+           Account oldAcc = oldMap.get(acc.Id);
+           
+           if(acc != null && acc.Status__c == 'InActive' && oldAcc.Status__c == 'Active'){
+                 accIds.add(acc.Id);
+           }
+       }
+
+       List<Opportunity> allOpp = [Select Id, AccountId, StageName From Opportunity Where AccountId in : accIds and StageName != 'Closed Won'];
+       List<Contact> allCont = [Select Id, Do_not_Contact__c, AccountId From Contact Where AccountId in : accIds and Do_not_Contact__c = false];
+       List<Contact> conListToUpdate = new List<Contact>();
+       if(!accIds.isEmpty()){
+           
+        if(!allCont.isEmpty()){
+             for(Contact con : allCont){
+                 con.Do_not_Contact__c = true;
+                 conListToUpdate.add(con);
+             }
+        }
+
+          if(!conListToUpdate.isEmpty()){
+             update conListToUpdate;
           }
-
-          if(!listOfCont.isEmpty()){
-             insert listOfCont;
+          if(!allOpp.isEmpty()){
+             delete allOpp;
           }
-      }
+       }
 
-
-      /**
-       * write a trigger to calculate number of cases for each account based on their Status (New, Working, Escalated)
-       */
+    }
 
        
 }
