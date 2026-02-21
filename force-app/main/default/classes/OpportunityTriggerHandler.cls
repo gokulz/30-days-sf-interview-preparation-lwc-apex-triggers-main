@@ -7,7 +7,9 @@ public with sharing class OpportunityTriggerHandler {
 
     public static void afterUpdate(List<Opportunity> opps, Map<Id,Opportunity> oldMap){
          //checboxChecker(opps, oldMap);
-         createTask(opps, oldMap);
+        // createTask(opps, oldMap);
+        updateAccountAnnualRevenue(opps, oldMap);
+
     }
     public static void afterDelete (List<Opportunity> opps){
         checboxChecker(opps, null);
@@ -215,7 +217,141 @@ public with sharing class OpportunityTriggerHandler {
           }
          
         }
+     
+
+          /**
+  Write a trigger that prevents an Opportunity from being deleted if the Opportunity Stage
+is 'Closed Won'
+   */
+   private static void preventDeletion(List<Opportunity> listOfOpportunity){
+     
+     for(Opportunity opp : listOfOpportunity){
+          
+          if(opp != null && opp.StageName == 'Closed Won'){
+              opp.addError('you cannot able to delete the triggger');
+        }
      }
+  }
+
+ 
+  /**
+   Write a trigger to ensure that the Account's "AnnualRevenue" is updated every time an
+Opportunity is closed.
+      **/
+
+  private static void updateAccountAnnualRevenue(List<Opportunity> listOfOpportunity, Map<Id, Opportunity> oldMap){
+
+    //this by solving with aggreate function 
+
+    //  Set<Id> accIds = new Set<Id>();
+       
+    //   for(Opportunity newOpp : listOfOpportunity){
+    //       Opportunity oldOpp = oldMap.get(newOpp.Id);
+
+    //      if(newOpp != null && newOpp.StageName == 'Closed Won' && oldOpp.StageName != newOpp.StageName){
+    //         accIds.add(newOpp.AccountId);
+    //      }
+        
+    // }
+
+
+    //         List<AggregateResult> agrResult = [Select Sum(Amount) amt, AccountId accId From Opportunity Where AccountId in : accIds and StageName = 'Closed Won' Group By AccountId];
+
+    //         List<Account> allAccounts = [Select Id, AnnualRevenue From Account Where Id in: accIds];
+            
+            
+    //         Map<Id,Double> totalAmountMap = new Map<Id,Double>();
+
+    //         for(AggregateResult agr : agrResult){
+    //                 Double amount = (Double) agr.get('amt');
+    //                 Id acId = (Id) agr.get('accId');
+                    
+    //                 totalAmountMap.put(acId, amount);
+                
+    //             }
+
+    //         List<Account> accListToUpdate = new List<Account>();
+                
+    //         for(Account acc : allAccounts){
+    //             if(totalAmountMap.containsKey(acc.Id)){
+    //                 acc.AnnualRevenue = totalAmountMap.get(acc.Id);
+    //                 accListToUpdate.add(acc);
+    //             }
+    //         }
+            
+            
+    //         if(!accListToUpdate.isEmpty()){
+    //             update accListToUpdate;
+    //         }
+         
+        //solving without aggregate 
+        Set<Id> accIds = new Set<Id>();
+
+        for(Opportunity newOpp : listOfOpportunity){
+            Opportunity oldOpp = oldMap.get(newOpp.Id);
+
+            if(newOpp != null && newOpp.AccountId != null && newOpp.StageName == 'Closed Won' && newOpp.StageName != oldOpp.StageName){
+                 accIds.add(newOpp.AccountId);
+            }
+        }
+        
+        List<Opportunity> allOpps = [Select Id, AccountId, Amount, StageName From Opportunity Where AccountId in : accIds and StageName = 'Closed Won'];
+        Map<Id,Decimal> amountMap = new Map<Id,Decimal>();
+
+
+        for(Opportunity opp : allOpps){
+            if(amountMap.containsKey(opp.AccountId)){
+               amountMap.put(opp.AccountId, amountMap.get(opp.AccountId) + opp.Amount);
+            }else{
+                 amountMap.put(opp.AccountId, opp.Amount);
+            }
+           
+        }
+
+      List<Account> allAccount = [Select Id, AnnualRevenue From Account Where Id  in : accIds];
+      List<Account> accToUpdate = new List<Account>();
+      for(Account acc : allAccount){
+           acc.AnnualRevenue = amountMap.get(acc.Id);
+           accToUpdate.add(acc);
+      }
+     
+      if(!accToUpdate.isEmpty()){
+          update accToUpdate;
+      }
+  }
+
+
+  /**
+   * Write a trigger that ensures a custom "Status" field on Account is updated when an Opportunity is closed.
+   */
+
+   private static void updateCustomStatus(List<Opportunity> listOfOpp, Map<Id,Opportunity> oldMap){
+      
+     Set<Id> accIds = new Set<Id>();
+      for(Opportunity newOpp : listOfOpp){
+         
+         Opportunity oldOpp = oldMap.get(newOpp.Id);
+
+          if(newOpp.AccountId != null && oldOpp.StageName != 'Closed Won' && newOpp.StageName == 'Closed Won'){
+              accIds.add(newOpp.AccountId);
+          }
+      }
+      
+      List<Account> allAccounts = [Select Id, Status__c From Account Where Id in : accIds];
+     
+      List<Account> accToupdate = new List<Account>();
+
+      for(Account acc : allAccounts){
+          acc.Status__c = 'Active';
+          accToupdate.add(acc);
+      }
+      
+      if(!accToupdate.isEmpty()){
+          update accToupdate;
+      }
+       
+   }
+}
 
     /**
      * challenge 16-02-2026 same trigger try with after update after undelete, after delete then use aggregateresult

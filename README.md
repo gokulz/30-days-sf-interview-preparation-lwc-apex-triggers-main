@@ -30,6 +30,7 @@
 15. **write a trigger to calculate number of cases for each account based on their Status (New, Working, Escalated)**
 16. **Automatically create a followup task with additional info description when lead is converted.**
 17. **Delete all Related Opportunities and check do not contact checkbox on related contact when user changes Account status from Active to Inactive.**
+18. **Write a trigger that prevents an Opportunity from being deleted if the Opportunity Stage is 'Closed Won'**
 
 
 ### Asynchronous Apex 
