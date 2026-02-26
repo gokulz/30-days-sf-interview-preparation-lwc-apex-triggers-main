@@ -1,6 +1,6 @@
 trigger ContactTrigger on Contact (after update) {
      // ContactTriggerHandler.beforeUpdate(trigger.new);
-     ContactTriggerHandler.afterUpdate(trigger.new, trigger.oldMap);
+     ContactTriggerHandler.afterUpdate(trigger.new, null);
 }
 
 /**

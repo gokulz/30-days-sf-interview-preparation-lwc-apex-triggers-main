@@ -309,6 +309,7 @@ Opportunity is closed.
         }
 
       List<Account> allAccount = [Select Id, AnnualRevenue From Account Where Id  in : accIds];
+
       List<Account> accToUpdate = new List<Account>();
       for(Account acc : allAccount){
            acc.AnnualRevenue = amountMap.get(acc.Id);
