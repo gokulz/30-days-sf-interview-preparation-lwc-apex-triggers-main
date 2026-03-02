@@ -33,6 +33,7 @@
 18. **Write a trigger that prevents an Opportunity from being deleted if the Opportunity Stage is 'Closed Won'**
 19. **Write a trigger that ensures a custom "Status" field on Account is updated when an Opportunity is closed.**
 20. **Create a trigger to prevent the creation of duplicate Contact records based on Email.**
+21. **Write a trigger that automatically sends an email when an Opportunity is closed-won and its Amount exceeds a certain value.**
 
 
 ### Asynchronous Apex 

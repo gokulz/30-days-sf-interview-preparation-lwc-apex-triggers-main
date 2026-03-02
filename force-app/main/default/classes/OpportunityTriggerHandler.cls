@@ -352,6 +352,37 @@ Opportunity is closed.
       }
        
    }
+
+
+   /**
+    * Write a trigger that automatically sends an email when an Opportunity is closed-won and its Amount exceeds a certain value.
+    */
+
+    private static void sendsAnEmail(List<Opportunity> allOps, Map<Id,Opportunity> oldMap){
+
+       List<Messaging.SingleEmailMessage> emailsToSend = new List<Messaging.SingleEmailMessage>();
+       Decimal certainValue = 50000;
+
+         
+         for(Opportunity newOps : allOps){
+             Opportunity oldOps = oldMap != null ? oldMap.get(newOps.Id) : null ;
+             
+             Boolean isNewlyWon = newOps.StageName == 'Closed Won' && (oldOps != null || oldOps.StageName != 'Closed Won');
+
+             if(isNewlyWon && newOps.Amount > certainValue){
+                 Messaging.SingleEmailMessage email = new Messaging.SingleEmailMessage();
+
+                 email.setTargetObjectId(newOps.OwnerId);
+                 email.setSubject('High value Deal Closed: ' + newOps.Name);
+                 email.setPlainTextBody('Congratulations a deal worth: $' + newOps.Amount);
+                 emailsToSend.add(email);
+             }
+         }
+
+         if(!emailsToSend.isEmpty()){
+            Messaging.sendEmail(emailsToSend);
+         }
+    }
 }
 
     /**
