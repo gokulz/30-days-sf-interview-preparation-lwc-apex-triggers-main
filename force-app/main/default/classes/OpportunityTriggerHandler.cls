@@ -383,6 +383,37 @@ Opportunity is closed.
             Messaging.sendEmail(emailsToSend);
          }
     }
+
+    /**
+     * Create a trigger to update a custom field on the Account when a related Opportunity is closed-lost.
+     */
+
+     private static void updateCustomField(List<Opportunity> oppList, Map<Id,Account> oldMap){
+          
+          Set<Id> accIds = new Set<Id>();
+          for(Opportunity newOpp : oppList){
+               
+              Opportunity oldOpp = oldMap != null ? oldMap.get(newOpp.Id) : null;
+
+              if(newOpp.AccountId != null && oldOpp != null && oldOpp.StageName != newOpp.StageName && newOpp.StageName == 'Closed Lost'){
+                   accIds.add(newOpp.AccountId);
+              }
+              
+          }
+
+         List<Account> allAccounts = [Select Id, Custom_Field__c From Account Where Id In : accIds];
+
+         List<Account> accountsToUpdate = new Account();
+          
+         for(Account acc : allAccounts){
+             acc.Custom_Field__c = 'Opportunity is Closed Lost';
+             accountsToUpdate.add(acc);
+         }
+
+         if(!accountsToUpdate.isEmpty()){
+             update accountsToUpdate;
+         }
+     }
 }
 
     /**
