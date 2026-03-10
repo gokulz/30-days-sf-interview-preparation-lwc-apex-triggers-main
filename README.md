@@ -35,14 +35,17 @@
 20. **Create a trigger to prevent the creation of duplicate Contact records based on Email.**
 21. **Write a trigger that automatically sends an email when an Opportunity is closed-won and its Amount exceeds a certain value.**
 22. **Create a trigger to update a custom field on the Account when a related Opportunity is closed-lost.**
+23. **Create a trigger that updates an Account’s "Priority" when an Opportunity reaches a "Closed Won" stage.**
 
 
 ### Asynchronous Apex 
 **--> async apex is a way of running apex code in the background in the separate thread or separate transactions.**
 ### Future Method 
 **--> future method runs in separate transaction after the current execution completes. it runs in a separate thread. mostly use for handling mixed dml errors. must be static and void. cannot accept sobjects directly.**
+
 ### Example
 1. **Future Method example - create a follow up task everytime a new lead gets created and associate that task with lead.**
+2. **Create a dummy HTTP callout using a Future method and invoke it from a trigger.**
 ### Batch Apex
 1. **Update all Contacts Where MailingCityCity = Hydrabad --> set the Region__c field to "South India"**.
 

@@ -2,13 +2,15 @@ public with sharing class OpportunityTriggerHandler {
  
     public static void afterInsert(List<Opportunity> opps){
       //  checboxChecker(opps, null);
-      updateTheAccountRating(opps);
+     // updateTheAccountRating(opps);
+      closedWonPriority(opps, null);
     }
 
     public static void afterUpdate(List<Opportunity> opps, Map<Id,Opportunity> oldMap){
          //checboxChecker(opps, oldMap);
         // createTask(opps, oldMap);
-        updateAccountAnnualRevenue(opps, oldMap);
+       // updateAccountAnnualRevenue(opps, oldMap);
+       closedWonPriority(opps, oldMap);
 
     }
     public static void afterDelete (List<Opportunity> opps){
@@ -384,36 +386,63 @@ Opportunity is closed.
          }
     }
 
-    /**
-     * Create a trigger to update a custom field on the Account when a related Opportunity is closed-lost.
-     */
+    // /**
+    //  * Create a trigger to update a custom field on the Account when a related Opportunity is closed-lost.
+    //  */
 
-     private static void updateCustomField(List<Opportunity> oppList, Map<Id,Account> oldMap){
+    //  private static void updateCustomField(List<Opportunity> oppList, Map<Id,Opportunity> oldMap){
           
-          Set<Id> accIds = new Set<Id>();
-          for(Opportunity newOpp : oppList){
+    //       Set<Id> accIds = new Set<Id>();
+    //       for(Opportunity newOpp : oppList){
                
-              Opportunity oldOpp = oldMap != null ? oldMap.get(newOpp.Id) : null;
+    //           Opportunity oldOpp = oldMap != null ? oldMap.get(newOpp.Id) : null;
 
-              if(newOpp.AccountId != null && oldOpp != null && oldOpp.StageName != newOpp.StageName && newOpp.StageName == 'Closed Lost'){
-                   accIds.add(newOpp.AccountId);
-              }
+    //           if(newOpp.AccountId != null && oldOpp != null && oldOpp.StageName != newOpp.StageName && newOpp.StageName == 'Closed Lost'){
+    //                accIds.add(newOpp.AccountId);
+    //           }
               
-          }
+    //       }
 
-         List<Account> allAccounts = [Select Id, Custom_Field__c From Account Where Id In : accIds];
+    //      List<Account> allAccounts = [Select Id, Custom_Field__c From Account Where Id In : accIds];
 
-         List<Account> accountsToUpdate = new Account();
+    //      List<Account> accountsToUpdate = new Account();
           
-         for(Account acc : allAccounts){
-             acc.Custom_Field__c = 'Opportunity is Closed Lost';
-             accountsToUpdate.add(acc);
-         }
+    //      for(Account acc : allAccounts){
+    //          acc.Custom_Field__c = 'Opportunity is Closed Lost';
+    //          accountsToUpdate.add(acc);
+    //      }
 
-         if(!accountsToUpdate.isEmpty()){
-             update accountsToUpdate;
-         }
-     }
+    //      if(!accountsToUpdate.isEmpty()){
+    //          update accountsToUpdate;
+    //      }
+    //  }
+
+     /**
+      * Create a trigger that updates an Account’s "Priority" when an Opportunity reaches a "Closed Won" stage
+      */
+
+      private static void closedWonPriority(List<Opportunity> oppList, Map<Id,Opportunity> oldMap){
+
+          Set<Id> accountIds = new Set<Id>();
+           
+           for(Opportunity newOpp : oppList){
+               Opportunity oldOpp = oldMap != null ? oldMap.get(newOpp.Id) : null;
+
+               if(newOpp.AccountId != null  && newOpp.StageName == 'Closed Won' || oldOpp.StageName != 'Closed Won'){
+                   accountIds.add(newOpp.AccountId);
+               }
+           }
+
+           List<Account> accountToUpdate = new List<Account>();
+
+           for(Id accId : accountIds){
+              accountToUpdate.add(new Account(Id = accId,Priority__c = 'Priority' ));
+           }
+
+           if(!accountToUpdate.isEmpty()){
+              update accountToUpdate;
+           }
+      }
 }
 
     /**
