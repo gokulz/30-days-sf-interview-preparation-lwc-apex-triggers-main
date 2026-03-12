@@ -17,6 +17,13 @@ public with sharing class OpportunityTriggerHandler {
         checboxChecker(opps, null);
     }
 
+    public static void beforeInsert(List<Opportunity> oppList){
+       preventDuplicateOpp(oppList, null);    
+    }
+    public static void beforeUpdate(List<Opportunity> oppList, Map<Id,Opportunity> oldMap){
+        preventDuplicateOpp(oppList, oldMap);
+    }
+
     /**
      * create a trigger whenever new opportunity is added
      * it will check opportunity exist checkbox in account object whenever no opportunity is there for accoount the checkbox vlaue false
@@ -443,6 +450,89 @@ Opportunity is closed.
               update accountToUpdate;
            }
       }
+
+
+      /**
+       * Write a trigger that prevents creating a duplicate Opportunity for the same Account and Opportunity Name.
+       */
+
+       private static void preventDuplicateOpp(List<Opportunity> oppList, Map<Id, Opportunity> oldMap){
+            
+          //use two sets to store accountIds and OppNames
+
+          Set<Id> accIds = new Set<Id>();
+          Set<String> oppNames = new Set<String>();
+
+          for(Opportunity newOpp : oppList){
+             if(newOpp.AccountId != null && newOpp.Name != null){
+                if(oldMap == null || newOpp.Name != oldMap.get(newOpp.Id).Name || newOpp.AccountId != oldMap.get(newOpp.Id).AccountId){
+                    accIds.add(newOpp.AccountId);
+                    oppNames.add(newOpp.Name.toLowerCase());
+                }
+             }
+          }
+
+          Map<Id,Set<String>> duplicateMap = new Map<Id,Set<String>>();
+
+          for(Opportunity existingOpp : [Select Id, Name, AccountId From Opportunity Where Id in : accIds and Name in : oppNames]){
+               
+               if(!duplicateMap.containsKey(existingOpp.AccountId)){
+                   duplicateMap.put(existingOpp.AccountId, new Set<String>());
+               }
+
+               duplicateMap.get(existingOpp.AccountId).add(existingOpp.Name.toLowerCase());
+          }
+          
+          for(Opportunity opp : oppList){
+            //checking if the account exisiting in the map
+              if(duplicateMap.containsKey(opp.AccountId)){
+                //checking if the opp name is existing in that account
+                if(duplicateMap.get(opp.AccountId).contains(opp.Name.toLowerCase())){
+                    opp.addError('Duplicate Opportunity Name Found for this Account');
+                }
+              }
+          }
+       }
+
+       /**
+        * Implement a trigger that populates a custom "Total Value" field on Account, summing up the "Amount" of related Opportunities
+        */
+
+        private static void calculateTotalValue(List<Opportunity> oppList, Map<Id,Opportunity> oldMap){
+              
+            Set<Id> accIds = new Set<Id>();
+             for(Opportunity newOpp : oppList){
+                 Opportunity oldOpp = oldMap != null ? oldMap.get(newOpp.Id) : null;
+
+                 if(newOpp.AccountId != null){
+                     accIds.add(newOpp.AccountId);
+                 }
+                 if(oldOpp != null && oldOpp.AccountId != null){
+                      accIds.add(oldOpp.AccountId);
+                 }
+             }
+
+            List<AggregateResult> agrResults = [SELECT AccountId accId, SUM(Amount) totalAmount FROM Opportunity WHERE AccountId IN :accIds GROUP BY AccountId];
+             
+             Map<Id,Decimal> accountMap = new Map<Id,Decimal>();
+            for(AggregateResult agr : agrResults){
+                Id accId = (Id) agr.get('accId');
+                Decimal amount = (Decimal) agr.get('totalAmount');
+                accountMap.put(accId, amount);
+            }
+
+            List<Account> accountToUpdate = new List<Account>();
+            for(Id accId : accIds){
+                accountToUpdate.add(new Account(
+                    Id = accId, 
+                    TotalValue__c = accountMap.containsKey(accId) ? accountMap.get(accId) : 0 
+                    ));
+            }
+
+            if(!accountToUpdate.isEmpty()){
+                update accountToUpdate;
+            }
+        }
 }
 
     /**

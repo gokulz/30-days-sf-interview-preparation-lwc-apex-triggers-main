@@ -36,6 +36,8 @@
 21. **Write a trigger that automatically sends an email when an Opportunity is closed-won and its Amount exceeds a certain value.**
 22. **Create a trigger to update a custom field on the Account when a related Opportunity is closed-lost.**
 23. **Create a trigger that updates an Account’s "Priority" when an Opportunity reaches a "Closed Won" stage.**
+24. **Write a trigger that prevents creating a duplicate Opportunity for the same Account and Opportunity Name.**
+25. **Implement a trigger that populates a custom "Total Value" field on Account, summing up the "Amount" of related Opportunities**
 
 
 ### Asynchronous Apex 
